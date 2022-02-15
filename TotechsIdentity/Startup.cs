@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Repositories;
 using System.Text;
+using TotechsIdentity.DataObjects;
 
 namespace TotechsIdentity
 {

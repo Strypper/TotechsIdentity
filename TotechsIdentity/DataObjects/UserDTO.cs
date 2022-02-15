@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace DataObjects
+namespace TotechsIdentity.DataObjects
 {
     public class UserDTO
     {

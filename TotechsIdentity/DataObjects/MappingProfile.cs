@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using DataObjects;
 using Entities;
 using System.Linq;
 
-namespace TotechsIdentity
+namespace TotechsIdentity.DataObjects
 {
     public class MappingProfile : Profile
     {
