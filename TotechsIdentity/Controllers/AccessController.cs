@@ -18,10 +18,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using TotechsIdentity.AppSettings;
 using TotechsIdentity.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TotechsIdentity.Controllers
 {
-    [Route("api/authentication")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class AccessController : BaseController
     {
@@ -43,6 +44,7 @@ namespace TotechsIdentity.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] UserDTO userDTO, CancellationToken cancellationToken = default)
         {
@@ -63,13 +65,14 @@ namespace TotechsIdentity.Controllers
                 _logger.LogError("Unable to assign user {username} to roles {roles}. Result details: {result}", userDTO.UserName, string.Join(", ", userDTO.Roles), string.Join(Environment.NewLine, addToRoleResult.Errors.Select(e => e.Description)));
 
             await _userManager.AddClaimAsync(user, new Claim("", ""));
-            //await _userManager.AddClaimAsync(user, new Claim("", ""));
+            await _userManager.AddClaimAsync(user, new Claim("", ""));
 
             await transaction.CommitAsync(cancellationToken);
             return Ok(_mapper.Map<UserDTO>(user));
         }
 
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -116,7 +119,7 @@ namespace TotechsIdentity.Controllers
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtTokenConfig.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var securityToken = handler.CreateToken(new SecurityTokenDescriptor 
+            var securityToken = handler.CreateToken(new SecurityTokenDescriptor
             {
                 Issuer = jwtTokenConfig.Issuer,
                 Audience = jwtTokenConfig.Issuer,

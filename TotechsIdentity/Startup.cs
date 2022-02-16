@@ -37,7 +37,7 @@ namespace TotechsIdentity
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "BugTracker.Api", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TotechsIdentity", Version = "v1" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
@@ -67,7 +67,16 @@ namespace TotechsIdentity
                 });
             });
 
-            services.AddIdentity<User, Role>()
+            services.AddIdentity<User, Role>(options => {
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 1;
+
+                //options.User.RequireUniqueEmail = true; //default false
+                //options.SignIn.RequireConfirmedEmail = true;
+            })
                     .AddEntityFrameworkStores<IdentityContext>()
                     .AddUserManager<UserManager>()
                     .AddDefaultTokenProviders();
@@ -86,9 +95,9 @@ namespace TotechsIdentity
 
                   cfg.TokenValidationParameters = new TokenValidationParameters()
                   {
-                      ValidIssuer = Configuration["JwtTokenConfig:Issuer"],
-                      ValidAudience = Configuration["JwtTokenConfig:Issuer"],
-                      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtTokenConfig:Key"]))
+                      ValidIssuer = Configuration["ApplicationSettings:Issuer"],
+                      ValidAudience = Configuration["ApplicationSettings:Issuer"],
+                      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"]))
                   };
 
               });
