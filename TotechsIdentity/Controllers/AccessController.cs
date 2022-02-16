@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using TotechsIdentity.AppSettings;
+using TotechsIdentity.Models;
 
 namespace TotechsIdentity.Controllers
 {
@@ -43,7 +44,7 @@ namespace TotechsIdentity.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(UserDTO userDTO, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> Register([FromBody] UserDTO userDTO, CancellationToken cancellationToken = default)
         {
             using var transaction = await _identityContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -62,13 +63,43 @@ namespace TotechsIdentity.Controllers
                 _logger.LogError("Unable to assign user {username} to roles {roles}. Result details: {result}", userDTO.UserName, string.Join(", ", userDTO.Roles), string.Join(Environment.NewLine, addToRoleResult.Errors.Select(e => e.Description)));
 
             await _userManager.AddClaimAsync(user, new Claim("", ""));
-            await _userManager.AddClaimAsync(user, new Claim("", ""));
+            //await _userManager.AddClaimAsync(user, new Claim("", ""));
 
             await transaction.CommitAsync(cancellationToken);
             return Ok(_mapper.Map<UserDTO>(user));
         }
 
-        private async Task<string> GenerateToken(User user, JwtTokenConfig jwtTokenConfig, DateTime expires)
+
+        [HttpPost]
+        public async Task<IActionResult> Login([FromBody] LoginModel model)
+        {
+            var user = await _userManager.FindByNameAsync(model.UserName);
+            if (user is null)
+                return BadRequest(new { message = "Username or password is incorrect" });
+
+            var passwordCheck = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+            if (!passwordCheck.Succeeded)
+                return BadRequest(new { message = "Username or password is incorrect" });
+
+            var tokenConfig = _tokenConfigOptionsAccessor.CurrentValue;
+            var token = await GenerateToken(user, tokenConfig);
+            var refresh_token = Guid.NewGuid().ToString().Replace("-", "");
+
+            var requestAt = DateTime.UtcNow;
+            var expiresIn = Math.Floor((requestAt.AddDays(1) - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds);
+            //var roles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                user.Id,
+                requestAt,
+                expiresIn,
+                accessToken = token,
+                refresh_token,
+            });
+        }
+
+        private async Task<string> GenerateToken(User user, JwtTokenConfig jwtTokenConfig /*DateTime expires*/)
         {
             var handler = new JwtSecurityTokenHandler();
 
@@ -91,7 +122,7 @@ namespace TotechsIdentity.Controllers
                 Audience = jwtTokenConfig.Issuer,
                 SigningCredentials = creds,
                 Subject = identity,
-                Expires = expires
+                Expires = DateTime.UtcNow.AddDays(1)
             });
 
             return handler.WriteToken(securityToken);
