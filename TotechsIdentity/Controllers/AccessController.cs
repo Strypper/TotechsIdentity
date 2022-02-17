@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using DataObjects;
+using TotechsIdentity.DataObjects;
 using Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +39,7 @@ namespace TotechsIdentity.Controllers
             _logger = logger;
             _tokenConfigOptionsAccessor = tokenConfigOptionsAccessor;
             _identityContext = identityContext;
+            _mapper = mapper;
         }
 
         [HttpPost]
