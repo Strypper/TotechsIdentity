@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using Repositories;
 using System.Collections.Generic;
 using System.Text;
+using TotechsIdentity.AppSettings;
 using TotechsIdentity.DataObjects;
 
 namespace TotechsIdentity
@@ -81,6 +82,8 @@ namespace TotechsIdentity
                     .AddUserManager<UserManager>()
                     .AddDefaultTokenProviders();
 
+            services.Configure<JwtTokenConfig>(Configuration.GetSection("JwtTokenConfig"));
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -95,9 +98,9 @@ namespace TotechsIdentity
 
                   cfg.TokenValidationParameters = new TokenValidationParameters()
                   {
-                      ValidIssuer = Configuration["ApplicationSettings:Issuer"],
-                      ValidAudience = Configuration["ApplicationSettings:Issuer"],
-                      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"]))
+                      ValidIssuer = Configuration["JwtTokenConfig:Issuer"],
+                      ValidAudience = Configuration["JwtTokenConfig:Issuer"],
+                      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtTokenConfig:Key"]))
                   };
 
               });
