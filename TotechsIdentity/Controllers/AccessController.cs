@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using TotechsIdentity.AppSettings;
 using TotechsIdentity.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.WebUtilities;
+using TotechsIdentity.Services.IService;
 
 namespace TotechsIdentity.Controllers
 {
@@ -32,9 +34,10 @@ namespace TotechsIdentity.Controllers
         private readonly IOptionsMonitor<JwtTokenConfig> _tokenConfigOptionsAccessor;
         private readonly IdentityContext _identityContext;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
         public AccessController(UserManager userManager, SignInManager<User> signInManager, 
                                 ILogger<AccessController> logger, IOptionsMonitor<JwtTokenConfig> tokenConfigOptionsAccessor,
-                                IdentityContext identityContext, IMapper mapper)
+                                IdentityContext identityContext, IMapper mapper, IEmailService emailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -42,6 +45,7 @@ namespace TotechsIdentity.Controllers
             _tokenConfigOptionsAccessor = tokenConfigOptionsAccessor;
             _identityContext = identityContext;
             _mapper = mapper;
+            _emailService = emailService;
         }
 
         [AllowAnonymous]
@@ -51,6 +55,7 @@ namespace TotechsIdentity.Controllers
             using var transaction = await _identityContext.Database.BeginTransactionAsync(cancellationToken);
 
             var user = _mapper.Map<User>(dto);
+            user.DateJoin = DateTime.UtcNow;
 
             var createResult = await _userManager.CreateAsync(user, dto.Password);
             if (!createResult.Succeeded)
@@ -67,6 +72,9 @@ namespace TotechsIdentity.Controllers
             //await _userManager.AddClaimAsync(user, new Claim("", ""));
 
             await transaction.CommitAsync(cancellationToken);
+
+            await SendEmailConfirmation(user);
+
             return Ok(_mapper.Map<UserDTO>(user));
         }
 
@@ -101,6 +109,32 @@ namespace TotechsIdentity.Controllers
             });
         }
 
+
+        [AllowAnonymous]
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string guid, string token)
+        {
+            if (string.IsNullOrWhiteSpace(guid) || string.IsNullOrWhiteSpace(token))
+                return NotFound();
+
+
+            var user = await _userManager.FindByGuidAsync(guid);
+            if (user is null)
+                return NotFound();
+
+
+            var decodedToken = WebEncoders.Base64UrlDecode(token);
+            string normalToken = Encoding.UTF8.GetString(decodedToken);
+
+
+            var result = await _userManager.ConfirmEmailAsync(user, normalToken);
+            if (!result.Succeeded)
+                return BadRequest(result);
+
+            return Content("<html><body><h1>Email confirmed successfully</h1></body></html>", "text/html");
+        }
+
+
         private async Task<string> GenerateToken(User user, JwtTokenConfig jwtTokenConfig /*DateTime expires*/)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -130,6 +164,19 @@ namespace TotechsIdentity.Controllers
             });
 
             return handler.WriteToken(securityToken);
+        }
+
+        private async Task SendEmailConfirmation(User user)
+        {
+            // Encode confirmation token
+            var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var validEmailToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(confirmEmailToken));
+
+            // Generate URL
+            var baseUrl = $"{Request.Scheme}://{Request.Host.Value}{Request.PathBase.Value}";
+            string confirmUrl = $"{baseUrl}/api/access/confirmEmail/confirm-email?guid={user.Guid}&token={validEmailToken}";
+
+            await _emailService.SendEmailConfirmation(confirmUrl, user.UserName, user.Email);
         }
     }
 }
