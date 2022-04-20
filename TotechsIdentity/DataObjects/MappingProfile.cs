@@ -11,6 +11,8 @@ namespace TotechsIdentity.DataObjects
             CreateMap<UserDTO, User>().ForMember(d => d.Guid, o => o.Ignore());
             CreateMap<User, UserDTO>().ForMember(d => d.Roles, o => o.MapFrom(s => s.UserRoles.Select(ur => ur.Role!.Name)));
 
+            CreateMap<CreateUserDTO, User>().ForMember(d => d.Guid, o => o.Ignore());
+
             CreateMap<Role, RoleDTO>();
             CreateMap<RoleDTO, Role>()
                 .ForMember(ent => ent.Id, opt => opt.Ignore());

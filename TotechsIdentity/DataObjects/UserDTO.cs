@@ -10,18 +10,37 @@ namespace TotechsIdentity.DataObjects
         [FromRoute]
         public string Guid { get; set; }
         [Required]
-        public string UserName { get; set; } = String.Empty;
+        public string UserName { get; set; } = string.Empty;
         [Required]
-        public string FirstName { get; set; } = String.Empty;
+        public string FirstName { get; set; } = string.Empty;
         [Required]
-        public string LastName { get; set; } = String.Empty;
+        public string LastName { get; set; } = string.Empty;
         [Required]
         [EmailAddress]
-        public string Email { get; set; } = String.Empty;
+        public string Email { get; set; } = string.Empty;
         [Required]
-        public string PhoneNumber { get; set; } = String.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
         [Required]
-        public string SmartZoneGuid { get; set; } = String.Empty;
+        public string SmartZoneGuid { get; set; } = string.Empty;
+        public ICollection<string> Roles { get; set; } = Array.Empty<string>();
+    }
+
+    public class CreateUserDTO
+    {
+        [Required]
+        public string UserName { get; set; } = string.Empty;
+        [Required]
+        public string Password { get; set; } = string.Empty;
+        [Required]
+        public string FirstName { get; set; } = string.Empty;
+        [Required]
+        public string LastName { get; set; } = string.Empty;
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+        [Required]
+        [Phone]
+        public string PhoneNumber { get; set; } = string.Empty;
         public ICollection<string> Roles { get; set; } = Array.Empty<string>();
     }
 }

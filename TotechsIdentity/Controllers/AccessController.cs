@@ -46,26 +46,25 @@ namespace TotechsIdentity.Controllers
 
         [AllowAnonymous]
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] UserDTO userDTO, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> Register([FromBody] CreateUserDTO dto, CancellationToken cancellationToken = default)
         {
             using var transaction = await _identityContext.Database.BeginTransactionAsync(cancellationToken);
 
-            var user = _mapper.Map<User>(userDTO);
+            var user = _mapper.Map<User>(dto);
 
-            var createResult = await _userManager.CreateAsync(user, "Welkom01");
+            var createResult = await _userManager.CreateAsync(user, dto.Password);
             if (!createResult.Succeeded)
             {
-                _logger.LogError("Unable to create user {username}. Detail: {result}", userDTO.UserName, string.Join(Environment.NewLine, createResult.Errors.Select(e => e.Description)));
+                _logger.LogError("Unable to create user {username}. Detail: {result}", dto.UserName, string.Join(Environment.NewLine, createResult.Errors.Select(e => e.Description)));
                 await transaction.RollbackAsync(cancellationToken);
                 return StatusCode(500);
             };
 
-            var addToRoleResult = await _userManager.AddToRolesAsync(user, userDTO.Roles);
+            var addToRoleResult = await _userManager.AddToRolesAsync(user, dto.Roles);
             if (!addToRoleResult.Succeeded)
-                _logger.LogError("Unable to assign user {username} to roles {roles}. Result details: {result}", userDTO.UserName, string.Join(", ", userDTO.Roles), string.Join(Environment.NewLine, addToRoleResult.Errors.Select(e => e.Description)));
+                _logger.LogError("Unable to assign user {username} to roles {roles}. Result details: {result}", dto.UserName, string.Join(", ", dto.Roles), string.Join(Environment.NewLine, addToRoleResult.Errors.Select(e => e.Description)));
 
-            await _userManager.AddClaimAsync(user, new Claim("", ""));
-            await _userManager.AddClaimAsync(user, new Claim("", ""));
+            //await _userManager.AddClaimAsync(user, new Claim("", ""));
 
             await transaction.CommitAsync(cancellationToken);
             return Ok(_mapper.Map<UserDTO>(user));
@@ -111,7 +110,9 @@ namespace TotechsIdentity.Controllers
 
             var identity = new ClaimsIdentity(
                 new GenericIdentity(user.UserName, "TokenAuth"),
-                new[] { new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), new Claim("id", user.Id.ToString()) }
+                new[] { new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
+                        //new Claim("id", user.Id.ToString()), 
+                        new Claim("permission", "true")}
                     .Union(roles.Select(role => new Claim(ClaimTypes.Role, role)))
                     .Union(claims)
                 );
@@ -122,7 +123,7 @@ namespace TotechsIdentity.Controllers
             var securityToken = handler.CreateToken(new SecurityTokenDescriptor
             {
                 Issuer = jwtTokenConfig.Issuer,
-                Audience = jwtTokenConfig.Issuer,
+                Audience = "Intranet",
                 SigningCredentials = creds,
                 Subject = identity,
                 Expires = DateTime.UtcNow.AddDays(1)

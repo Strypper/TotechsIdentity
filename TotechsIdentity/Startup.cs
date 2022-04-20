@@ -1,5 +1,4 @@
 using AutoMapper;
-using AutoMapper.EquivalencyExpression;
 using Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -98,8 +97,8 @@ namespace TotechsIdentity
 
                   cfg.TokenValidationParameters = new TokenValidationParameters()
                   {
-                      ValidIssuer = Configuration["JwtTokenConfig:Issuer"],
                       ValidAudience = Configuration["JwtTokenConfig:Issuer"],
+                      ValidateIssuer = false,
                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtTokenConfig:Key"]))
                   };
 

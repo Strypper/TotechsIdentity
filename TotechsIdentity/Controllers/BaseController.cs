@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace TotechsIdentity.Controllers
 {
-    [Authorize]
     public class BaseController : ControllerBase
     {
     }
