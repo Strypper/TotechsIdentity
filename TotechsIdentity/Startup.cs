@@ -8,13 +8,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Repositories;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Mail;
 using System.Text;
 using TotechsIdentity.AppSettings;
 using TotechsIdentity.DataObjects;
+using TotechsIdentity.Services;
+using TotechsIdentity.Services.IService;
 
 namespace TotechsIdentity
 {
@@ -30,6 +35,8 @@ namespace TotechsIdentity
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<JwtTokenConfig>(Configuration.GetSection("JwtTokenConfig"));
+            services.Configure<EmailConfig>(Configuration.GetSection("EmailConfig"));
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
@@ -81,7 +88,20 @@ namespace TotechsIdentity
                     .AddUserManager<UserManager>()
                     .AddDefaultTokenProviders();
 
-            services.Configure<JwtTokenConfig>(Configuration.GetSection("JwtTokenConfig"));
+            services.AddScoped<IEmailService, SMTPEmailService>();
+            //Create SMTP Client
+            services.AddScoped(provider =>
+            {
+                var config = provider.GetRequiredService<IOptionsMonitor<EmailConfig>>().CurrentValue;
+                SmtpClient client = new(config.Host, config.Port)
+                {
+                    EnableSsl = config.EnableSsl,
+                    UseDefaultCredentials = config.UseDefaultCredentials,
+                    Credentials = new NetworkCredential(config.UserName, config.AppPassword)
+                };
+
+                return client;
+            });
 
             services.AddAuthentication(options =>
             {
