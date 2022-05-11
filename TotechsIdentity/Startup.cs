@@ -17,6 +17,7 @@ using System.Net;
 using System.Net.Mail;
 using System.Text;
 using TotechsIdentity.AppSettings;
+using TotechsIdentity.Constants;
 using TotechsIdentity.DataObjects;
 using TotechsIdentity.Services;
 using TotechsIdentity.Services.IService;
@@ -44,14 +45,18 @@ namespace TotechsIdentity
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "TotechsIdentity", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                c.SwaggerDoc("v1", new OpenApiInfo 
+                                        { 
+                                          Title   = SwaggerConstants.Title, 
+                                          Version = SwaggerConstants.OpenAPIVersion 
+                                        });
+                c.AddSecurityDefinition(SwaggerConstants.SecurityDefinitionName, new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Name        = SwaggerConstants.SecurityDefinitionName,
+                    Description = SwaggerConstants.Description,
+                    Scheme      = SwaggerConstants.Scheme,
+                    In          = ParameterLocation.Header,
+                    Type        = SecuritySchemeType.ApiKey,
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
@@ -89,6 +94,7 @@ namespace TotechsIdentity
                     .AddDefaultTokenProviders();
 
             services.AddScoped<IEmailService, SMTPEmailService>();
+            services.AddScoped<ITokenService, JWTTokenService>();
             //Create SMTP Client
             services.AddScoped(provider =>
             {
@@ -146,12 +152,9 @@ namespace TotechsIdentity
             }
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "TotechsIdentity v1"));
-
+            app.UseSwaggerUI(c => c.SwaggerEndpoint(SwaggerConstants.Url, SwaggerConstants.SwaggerEndPointName));
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthentication();
 
             app.UseAuthorization();

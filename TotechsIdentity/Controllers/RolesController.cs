@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +32,7 @@ namespace TotechsIdentity.Controllers
             return Ok(_mapper.Map<IEnumerable<RoleDTO>>(roles));
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] RoleDTO dTO)
         {

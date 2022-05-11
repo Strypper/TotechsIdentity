@@ -2,6 +2,7 @@
 using System.Net.Mail;
 using System.Threading.Tasks;
 using TotechsIdentity.AppSettings;
+using TotechsIdentity.Constants;
 using TotechsIdentity.EmailTemplates;
 using TotechsIdentity.Services.IService;
 
@@ -10,12 +11,13 @@ namespace TotechsIdentity.Services
     public class SMTPEmailService : IEmailService
     {
         private readonly EmailConfig _emailConfig;
-        private readonly SmtpClient _smtpClient;
+        private readonly SmtpClient  _smtpClient;
 
-        public SMTPEmailService(IOptionsMonitor<EmailConfig> emailConfig, SmtpClient smtpClient)
+        public SMTPEmailService(IOptionsMonitor<EmailConfig> emailConfig, 
+                                SmtpClient smtpClient)
         {
             _emailConfig = emailConfig.CurrentValue;
-            _smtpClient = smtpClient;
+            _smtpClient  = smtpClient;
         }
 
         public async Task SendEmail(string to, string subject, string emailContent)
@@ -33,7 +35,7 @@ namespace TotechsIdentity.Services
             var template = HtmlTemplates.EmailConfirmation;
             template = template.Replace("{{username}}", username).Replace("{{confirmUrl}}", confirmUrl);
 
-            await SendEmail(to, "Email Confirmation", template);
+            await SendEmail(to, EmailConstants.EmailConfirmation, template);
         }
 
         public async Task SendEmailResetPassword(string resetPassword, string username, string to)
@@ -41,7 +43,7 @@ namespace TotechsIdentity.Services
             var template = HtmlTemplates.EmailConfirmation;
             template = template.Replace("{{username}}", username).Replace("{{confirmUrl}}", resetPassword);
 
-            await SendEmail(to, "Email Confirmation", template);
+            await SendEmail(to, EmailConstants.EmailConfirmation, template);
         }
     }
 }

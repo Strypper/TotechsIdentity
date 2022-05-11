@@ -7,8 +7,8 @@ namespace Entities
     public class IdentityContext : IdentityDbContext<User, Role, string, IdentityUserClaim<string>, UserRole, IdentityUserLogin<string>, IdentityRoleClaim<string>, IdentityUserToken<string>>
     {
         public IdentityContext(DbContextOptions options) : base(options) { }
-
-        public DbSet<Student> Students { get; set; }
+        public DbSet<RoleLevel> RoleLevels { get; set; }
+        public DbSet<Country>   Countries  { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -18,7 +18,6 @@ namespace Entities
             {
                 entity.Property(e => e.Guid).HasDefaultValueSql("NEWID()");
                 entity.HasIndex(e => e.Guid).IsUnique();
-                entity.HasIndex(u => u.SmartZoneId).HasFilter("[SmartZoneId] IS NOT NULL");
             });
 
             builder.Entity<UserRole>(entity =>

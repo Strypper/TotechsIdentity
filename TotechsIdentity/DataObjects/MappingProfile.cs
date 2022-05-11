@@ -16,6 +16,14 @@ namespace TotechsIdentity.DataObjects
             CreateMap<Role, RoleDTO>();
             CreateMap<RoleDTO, Role>()
                 .ForMember(ent => ent.Id, opt => opt.Ignore());
+
+            CreateMap<RoleLevel, RoleLevelDTO>();
+            CreateMap<RoleLevelDTO, RoleLevel>()
+                .ForMember(ent => ent.Id, opt => opt.Ignore());
+
+            CreateMap<Country, CountryDTO>();
+            CreateMap<CountryDTO, Country>()
+                .ForMember(ent => ent.Id, opt => opt.Ignore());
         }
     }
 }

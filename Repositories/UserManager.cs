@@ -42,7 +42,6 @@ namespace Repositories
         public IQueryable<User> FindAll(int smartZoneId, Expression<Func<User, bool>>? predicate = null)
             => Users
                 .Where(u => !u.IsDeleted)
-                .Where(u => u.SmartZoneId == smartZoneId)
                 .WhereIf(predicate != null, predicate!);
     }
 }

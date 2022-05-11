@@ -4,23 +4,17 @@ using Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Repositories;
 using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Security.Claims;
-using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using TotechsIdentity.AppSettings;
 using TotechsIdentity.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.WebUtilities;
 using TotechsIdentity.Services.IService;
+using TotechsIdentity.Constants;
 
 namespace TotechsIdentity.Controllers
 {
@@ -28,24 +22,31 @@ namespace TotechsIdentity.Controllers
     [ApiController]
     public class AccessController : BaseController
     {
-        private readonly UserManager _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly ILogger<AccessController> _logger;
-        private readonly IOptionsMonitor<JwtTokenConfig> _tokenConfigOptionsAccessor;
-        private readonly IdentityContext _identityContext;
-        private readonly IMapper _mapper;
-        private readonly IEmailService _emailService;
-        public AccessController(UserManager userManager, SignInManager<User> signInManager, 
-                                ILogger<AccessController> logger, IOptionsMonitor<JwtTokenConfig> tokenConfigOptionsAccessor,
-                                IdentityContext identityContext, IMapper mapper, IEmailService emailService)
+        private readonly IMapper                         _mapper;
+        private readonly UserManager                     _userManager;
+        private readonly IEmailService                   _emailService;
+        private readonly ITokenService                   _tokenService;
+        private readonly IdentityContext                 _identityContext;
+        private readonly RoleManager<Role>               _roleManager;
+        private readonly SignInManager<User>             _signInManager;
+        private readonly ILogger<AccessController>       _logger;
+        public AccessController(IMapper mapper, 
+                                UserManager userManager,
+                                IEmailService emailService,
+                                ITokenService tokenService,
+                                RoleManager<Role> roleManager,
+                                ILogger<AccessController> logger,
+                                SignInManager<User> signInManager, 
+                                IdentityContext identityContext)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _logger = logger;
-            _tokenConfigOptionsAccessor = tokenConfigOptionsAccessor;
+            _logger          = logger;
+            _mapper          = mapper;
+            _userManager     = userManager;
+            _roleManager     = roleManager;
+            _tokenService    = tokenService;
+            _emailService    = emailService;
+            _signInManager   = signInManager;
             _identityContext = identityContext;
-            _mapper = mapper;
-            _emailService = emailService;
         }
 
         [AllowAnonymous]
@@ -65,9 +66,21 @@ namespace TotechsIdentity.Controllers
                 return StatusCode(500);
             };
 
-            var addToRoleResult = await _userManager.AddToRolesAsync(user, dto.Roles);
-            if (!addToRoleResult.Succeeded)
-                _logger.LogError("Unable to assign user {username} to roles {roles}. Result details: {result}", dto.UserName, string.Join(", ", dto.Roles), string.Join(Environment.NewLine, addToRoleResult.Errors.Select(e => e.Description)));
+            foreach (var roleId in dto.Roles)
+            {
+                var role = _roleManager.FindByIdAsync(roleId); 
+                if(role.Result != null)
+                {
+                    var addToRoleResult = await _userManager.AddToRoleAsync(user, role.Result.NormalizedName);
+                    if (!addToRoleResult.Succeeded)
+                        _logger.LogError("Unable to assign user {username} to roles {roles}. Result details: {result}", dto.UserName, string.Join(", ", dto.Roles), string.Join(Environment.NewLine, addToRoleResult.Errors.Select(e => e.Description)));
+                }
+                else
+                {
+                    _logger.LogError($"This role id: {roleId} does not exist");
+                    return BadRequest($"This role id: {roleId} does not exist");
+                }
+            }
 
             //await _userManager.AddClaimAsync(user, new Claim("", ""));
 
@@ -87,12 +100,15 @@ namespace TotechsIdentity.Controllers
             if (user is null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var userDTO = _mapper.Map<UserDTO>(user);
+            userDTO.Roles = userRoles.ToArray();
+
             var passwordCheck = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
             if (!passwordCheck.Succeeded)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
-            var tokenConfig = _tokenConfigOptionsAccessor.CurrentValue;
-            var token = await GenerateToken(user, tokenConfig);
+            var token         = await _tokenService.GenerateToken(user);
             var refresh_token = Guid.NewGuid().ToString().Replace("-", "");
 
             var requestAt = DateTime.UtcNow;
@@ -106,6 +122,7 @@ namespace TotechsIdentity.Controllers
                 expiresIn,
                 accessToken = token,
                 refresh_token,
+                userInfo = userDTO
             });
         }
 
@@ -131,39 +148,8 @@ namespace TotechsIdentity.Controllers
             if (!result.Succeeded)
                 return BadRequest(result);
 
-            return Content("<html><body><h1>Email confirmed successfully</h1></body></html>", "text/html");
-        }
-
-
-        private async Task<string> GenerateToken(User user, JwtTokenConfig jwtTokenConfig /*DateTime expires*/)
-        {
-            var handler = new JwtSecurityTokenHandler();
-
-            var roles = await _userManager.GetRolesAsync(user);
-            var claims = await _userManager.GetClaimsAsync(user);
-
-            var identity = new ClaimsIdentity(
-                new GenericIdentity(user.UserName, "TokenAuth"),
-                new[] { new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
-                        //new Claim("id", user.Id.ToString()), 
-                        new Claim("permission", "true")}
-                    .Union(roles.Select(role => new Claim(ClaimTypes.Role, role)))
-                    .Union(claims)
-                );
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtTokenConfig.Key));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var securityToken = handler.CreateToken(new SecurityTokenDescriptor
-            {
-                Issuer = jwtTokenConfig.Issuer,
-                Audience = "Intranet",
-                SigningCredentials = creds,
-                Subject = identity,
-                Expires = DateTime.UtcNow.AddDays(1)
-            });
-
-            return handler.WriteToken(securityToken);
+            return Content(EmailConstants.SuccessHtmlTemplate, 
+                           EmailConstants.ContentType);
         }
 
         private async Task SendEmailConfirmation(User user)

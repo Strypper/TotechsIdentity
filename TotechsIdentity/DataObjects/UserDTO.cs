@@ -9,19 +9,26 @@ namespace TotechsIdentity.DataObjects
     {
         [FromRoute]
         public string Guid { get; set; }
+
         [Required]
         public string UserName { get; set; } = string.Empty;
+
         [Required]
         public string FirstName { get; set; } = string.Empty;
+
         [Required]
         public string LastName { get; set; } = string.Empty;
+
+        public string? ProfilePicUrl { get; set; }
+
         [Required]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
+
         [Required]
         public string PhoneNumber { get; set; } = string.Empty;
-        [Required]
-        public string SmartZoneGuid { get; set; } = string.Empty;
+
+        public CountryDTO Country { get; set; }
         public ICollection<string> Roles { get; set; } = Array.Empty<string>();
     }
 

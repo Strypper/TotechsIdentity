@@ -7,7 +7,7 @@ namespace TotechsIdentity.Filters.Authorizations
     {
         public AdministratorOnlyAttribute()
         {
-            Roles = Constants.Roles.Administrator;
+            Roles = Repositories.Constants.Roles.Administrator;
         }
     }
 }

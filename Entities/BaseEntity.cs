@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace Entities
 {
-    public class Student
+    public class BaseEntity
     {
-        public int? Id { get; set; }
-        public bool Verified { get; set; }
-        public User UserInfo { get; set; }
+        public string Id { get; set; }
     }
 }
