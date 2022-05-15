@@ -1,7 +1,9 @@
 ﻿using Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Repositories;
+using Repositories.Extensions;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
@@ -17,13 +19,16 @@ namespace TotechsIdentity.Services
 {
     public class JWTTokenService : ITokenService
     {
-        private readonly UserManager    _userManager;
-        private readonly JwtTokenConfig _tokenConfig;
+        private readonly UserManager     _userManager;
+        private readonly JwtTokenConfig  _tokenConfig;
+        private readonly IdentityContext _identityContext;
         public JWTTokenService(UserManager                     userManager
-                              ,IOptionsMonitor<JwtTokenConfig> tokenConfigOptionsAccessor)
+                              ,IOptionsMonitor<JwtTokenConfig> tokenConfigOptionsAccessor
+                              ,IdentityContext                 identityContext)
         {
-            _userManager = userManager;
-            _tokenConfig = tokenConfigOptionsAccessor.CurrentValue;
+            _userManager     = userManager;
+            _tokenConfig     = tokenConfigOptionsAccessor.CurrentValue;
+            _identityContext = identityContext;
         }
         public async Task<string> GenerateToken(User user)
         {
@@ -32,13 +37,14 @@ namespace TotechsIdentity.Services
             var roles = await _userManager.GetRolesAsync(user);
             var claims = await _userManager.GetClaimsAsync(user);
 
+            var projectPermissions = await _identityContext.ProjectPermissions.Where(projectPermission => projectPermission.RequestUser.Id == user.Id).ToArrayAsync();
+
             var identity = new ClaimsIdentity(
                 new GenericIdentity(user.UserName, JwtTokenConstants.GenericIdentityType),
-                new[] { new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
-                        //new Claim("id", user.Id.ToString()), 
-                        new Claim("IntranetPermission", "true")}
+                new[] { new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())}
                     .Union(roles.Select(role => new Claim(ClaimTypes.Role, role)))
                     .Union(claims)
+                    .Union(projectPermissions.ClaimsExtensions())
                 );
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenConfig.Key));

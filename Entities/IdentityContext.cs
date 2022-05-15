@@ -7,8 +7,9 @@ namespace Entities
     public class IdentityContext : IdentityDbContext<User, Role, string, IdentityUserClaim<string>, UserRole, IdentityUserLogin<string>, IdentityRoleClaim<string>, IdentityUserToken<string>>
     {
         public IdentityContext(DbContextOptions options) : base(options) { }
-        public DbSet<RoleLevel> RoleLevels { get; set; }
-        public DbSet<Country>   Countries  { get; set; }
+        public DbSet<RoleLevel>         RoleLevels         { get; set; }
+        public DbSet<Country>           Countries          { get; set; }
+        public DbSet<ProjectPermission> ProjectPermissions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

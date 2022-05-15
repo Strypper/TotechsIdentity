@@ -24,6 +24,10 @@ namespace TotechsIdentity.DataObjects
             CreateMap<Country, CountryDTO>();
             CreateMap<CountryDTO, Country>()
                 .ForMember(ent => ent.Id, opt => opt.Ignore());
+
+            CreateMap<ProjectPermission, ProjectPermissionDTO>();
+            CreateMap<ProjectPermissionDTO, ProjectPermission>()
+                .ForMember(ent => ent.Id, opt => opt.Ignore());
         }
     }
 }
