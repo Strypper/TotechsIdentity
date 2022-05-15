@@ -86,7 +86,7 @@ namespace TotechsIdentity
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequiredLength = 1;
 
-                //options.User.RequireUniqueEmail = true; //default false
+                options.User.RequireUniqueEmail = true; //default false
                 //options.SignIn.RequireConfirmedEmail = true;
             })
                     .AddEntityFrameworkStores<IdentityContext>()
@@ -137,7 +137,6 @@ namespace TotechsIdentity
 
             services.AddSingleton(new MapperConfiguration(mc =>
             {
-                //mc.AddCollectionMappers(); //outdated version
                 mc.AddProfile(new MappingProfile());
             }).CreateMapper());
         }
