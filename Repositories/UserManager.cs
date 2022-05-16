@@ -29,7 +29,7 @@ namespace Repositories
         }
 
         public async Task<User> FindByGuidAsync(string guid)
-            => await Users.Where(u => u.Guid == guid).FirstOrDefaultAsync();
+            => await Users.FirstOrDefaultAsync(u => u.Guid == guid);
 
         public new async Task<User?> FindByNameAsync(string userName)
         {
