@@ -14,6 +14,6 @@ namespace TotechsIdentity.DataObjects
         public string  Mission   { get; set; }
         public string  MainTasks { get; set; }
 
-        public ICollection<RoleLevelDTO> RoleLevels { get; set; } = new HashSet<RoleLevelDTO>();
+        public ICollection<RoleLevelDTO>? RoleLevels { get; set; } = new HashSet<RoleLevelDTO>();
     }
 }
