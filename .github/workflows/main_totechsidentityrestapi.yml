@@ -53,5 +53,5 @@ jobs:
         with:
           app-name: 'TotechsIdentityRestAPI'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_99FF5D1FCD764BCCA21EF5D48EE695BA }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_734C757E7FBC43DB9EB5CF847F1DF042 }}
           package: .
