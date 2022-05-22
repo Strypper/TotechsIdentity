@@ -50,8 +50,7 @@ jobs:
       - name: Bash
         run: |
           env
-          ls -l $RUNNER_WORKSPACE
-          ls -l $DEPLOYMENT_BASEPATH
+          ls -l $RUNNER_WORKSPACE/TotechsIdentity
           
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
