@@ -48,8 +48,11 @@ jobs:
           name: .net-app
       
       - name: List env
+        uses: azure/webapps-deploy@v2
         run: |
           env
+          ls -l
+          pwd
         
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
