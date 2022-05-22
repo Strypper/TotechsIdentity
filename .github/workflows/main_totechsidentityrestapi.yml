@@ -49,8 +49,9 @@ jobs:
         
       - name: Bash
         run: |
-          env
+          pwd
           ls -l $RUNNER_WORKSPACE/TotechsIdentity
+          env
           
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -59,4 +60,4 @@ jobs:
           app-name: 'TotechsIdentityRestAPI'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A43C424C94C049BB8F8292FE81585889 }}
-          package: ${{env.RUNNER_WORKSPACE}}/TotechsIdentity/TotechsIdentity.dll
+          package: .
