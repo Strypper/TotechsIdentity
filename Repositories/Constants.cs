@@ -13,4 +13,8 @@
             //public const string JobOwner = "JobOwner";
         }
     }
+    public static class IntranetConstants
+    {
+        public const string BaseUrl = "https://intranetapi.azurewebsites.net/";
+    }
 }

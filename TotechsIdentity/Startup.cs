@@ -1,4 +1,6 @@
 using AutoMapper;
+using Contracts.Intranet;
+using Contracts.TotechsIdentity;
 using Entities;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -11,13 +13,18 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Refit;
 using Repositories;
+using Repositories.IntranetRepositories;
+using Repositories.TotechsRepositories;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
 using TotechsIdentity.AppSettings;
 using TotechsIdentity.Constants;
+using TotechsIdentity.Controllers;
 using TotechsIdentity.DataObjects;
 using TotechsIdentity.Services;
 using TotechsIdentity.Services.IService;
@@ -38,7 +45,7 @@ namespace TotechsIdentity
         {
             services.Configure<JwtTokenConfig>(Configuration.GetSection("JwtTokenConfig"));
             services.Configure<EmailConfig>(Configuration.GetSection("EmailConfig"));
-
+            services.AddHttpClient();
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddDbContextPool<IdentityContext>(options => options.UseSqlServer(Configuration.GetConnectionString("IdentityContext")));
@@ -47,8 +54,8 @@ namespace TotechsIdentity
             {
                 c.SwaggerDoc("v1", new OpenApiInfo 
                                         { 
-                                          Title   = SwaggerConstants.Title, 
-                                          Version = SwaggerConstants.OpenAPIVersion 
+                                            Title   = SwaggerConstants.Title, 
+                                            Version = SwaggerConstants.OpenAPIVersion 
                                         });
                 c.AddSecurityDefinition(SwaggerConstants.SecurityDefinitionName, new OpenApiSecurityScheme
                 {
@@ -139,6 +146,12 @@ namespace TotechsIdentity
             {
                 mc.AddProfile(new MappingProfile());
             }).CreateMapper());
+
+            //Intranet
+            services.AddTransient<IProjectRepository, ProjectRepository>();
+
+            //Totechs
+            services.AddTransient<IProjectPermissionRepository, ProjectPermissionRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
