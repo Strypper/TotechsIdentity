@@ -15,6 +15,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.WebUtilities;
 using TotechsIdentity.Services.IService;
 using TotechsIdentity.Constants;
+using Refit;
+using Contracts.Intranet;
+using TotechsIdentity.DataObjects.IntranetDataObjects;
+using Contracts.TotechsIdentity;
 
 namespace TotechsIdentity.Controllers
 {
@@ -29,24 +33,30 @@ namespace TotechsIdentity.Controllers
         private readonly IdentityContext                 _identityContext;
         private readonly RoleManager<Role>               _roleManager;
         private readonly SignInManager<User>             _signInManager;
+        private readonly IProjectRepository              _projectRepository;
+        private readonly IProjectPermissionRepository    _projectPermissionRepository;
         private readonly ILogger<AccessController>       _logger;
         public AccessController(IMapper mapper, 
                                 UserManager userManager,
                                 IEmailService emailService,
                                 ITokenService tokenService,
                                 RoleManager<Role> roleManager,
+                                IdentityContext identityContext,
                                 ILogger<AccessController> logger,
-                                SignInManager<User> signInManager, 
-                                IdentityContext identityContext)
+                                SignInManager<User> signInManager,
+                                IProjectRepository projectRepository,
+                                IProjectPermissionRepository projectPermissionRepository)
         {
-            _logger          = logger;
-            _mapper          = mapper;
-            _userManager     = userManager;
-            _roleManager     = roleManager;
-            _tokenService    = tokenService;
-            _emailService    = emailService;
-            _signInManager   = signInManager;
-            _identityContext = identityContext;
+            _logger                      = logger;
+            _mapper                      = mapper;
+            _userManager                 = userManager;
+            _roleManager                 = roleManager;
+            _tokenService                = tokenService;
+            _emailService                = emailService;
+            _signInManager               = signInManager;
+            _identityContext             = identityContext;
+            _projectRepository           = projectRepository;
+            _projectPermissionRepository = projectPermissionRepository; 
         }
 
         [AllowAnonymous]
@@ -58,6 +68,10 @@ namespace TotechsIdentity.Controllers
             var user = _mapper.Map<User>(dto);
             user.DateJoin = DateTime.UtcNow;
 
+            var project = await _projectRepository.GetByIdAsync<ProjectDTO>("api/Project/Get", dto.RequestServiceId);
+            if(project == null)
+                return NotFound("Request Application is not exist");
+
             var createResult = await _userManager.CreateAsync(user, dto.Password);
             if (!createResult.Succeeded)
             {
@@ -65,6 +79,9 @@ namespace TotechsIdentity.Controllers
                 await transaction.RollbackAsync(cancellationToken);
                 return StatusCode(500);
             };
+
+            //Register permission to use request service
+            _projectPermissionRepository.Create(new ProjectPermission() { RequestUser = user , ProjectId = project.Id , IsApproved = true});
 
             foreach (var roleId in dto.Roles)
             {

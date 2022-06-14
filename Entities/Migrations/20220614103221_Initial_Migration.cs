@@ -14,10 +14,10 @@ namespace Entities.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleIcon = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Summary = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Mission = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    MainTasks = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    RoleIcon = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Summary = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Mission = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MainTasks = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -31,11 +31,12 @@ namespace Entities.Migrations
                 name: "Countries",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CountryName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    FlagUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    BackgroundUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DevStory = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CountryName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    FlagUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BackgroundUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DevStory = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DevPercentages = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
@@ -68,10 +69,11 @@ namespace Entities.Migrations
                 name: "RoleLevels",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    LevelName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LevelColor = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    LevelName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LevelColor = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     RoleLevelIcon = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Level = table.Column<int>(type: "int", nullable: false),
                     RoleId = table.Column<string>(type: "nvarchar(450)", nullable: true)
@@ -91,13 +93,17 @@ namespace Entities.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Guid = table.Column<string>(type: "nvarchar(450)", nullable: true, defaultValueSql: "NEWID()"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Guid = table.Column<string>(type: "nvarchar(450)", nullable: false, defaultValueSql: "NEWID()"),
+                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MiddleName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     IsExpired = table.Column<bool>(type: "bit", nullable: false),
+                    Gender = table.Column<bool>(type: "bit", nullable: true),
                     DateJoin = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CountryId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CountryId = table.Column<int>(type: "int", nullable: true),
+                    ProfilePicUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -208,6 +214,26 @@ namespace Entities.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "ProjectPermissions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RequestUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ProjectId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsApproved = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ProjectPermissions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ProjectPermissions_AspNetUsers_RequestUserId",
+                        column: x => x.RequestUserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -249,8 +275,7 @@ namespace Entities.Migrations
                 name: "IX_AspNetUsers_Guid",
                 table: "AspNetUsers",
                 column: "Guid",
-                unique: true,
-                filter: "[Guid] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -258,6 +283,11 @@ namespace Entities.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ProjectPermissions_RequestUserId",
+                table: "ProjectPermissions",
+                column: "RequestUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RoleLevels_RoleId",
@@ -281,6 +311,9 @@ namespace Entities.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "ProjectPermissions");
 
             migrationBuilder.DropTable(
                 name: "RoleLevels");

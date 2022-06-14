@@ -24,6 +24,11 @@
         public const string ServiceName = "Totechs";
     }
 
+    public static class IntranetConstants
+    {
+        public const string BaseUrl = "https://intranetapi.azurewebsites.net/api/";
+    }
+
     public static class EmailConstants
     {
         public const string EmailConfirmation   = "Email Confirmation";

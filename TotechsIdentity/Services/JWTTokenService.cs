@@ -37,7 +37,10 @@ namespace TotechsIdentity.Services
             var roles = await _userManager.GetRolesAsync(user);
             var claims = await _userManager.GetClaimsAsync(user);
 
-            var projectPermissions = await _identityContext.ProjectPermissions.Where(projectPermission => projectPermission.RequestUser.Id == user.Id).ToArrayAsync();
+            var projectPermissions = await _identityContext
+                                                .ProjectPermissions
+                                                .Where(projectPermission => projectPermission.RequestUser.Id == user.Id)
+                                                .ToArrayAsync();
 
             var identity = new ClaimsIdentity(
                 new GenericIdentity(user.UserName, JwtTokenConstants.GenericIdentityType),

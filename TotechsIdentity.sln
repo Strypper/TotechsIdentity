@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30717.126
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TotechsIdentity", "TotechsIdentity\TotechsIdentity.csproj", "{27477EAB-60F3-4571-A966-35B860A38BBC}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -12,6 +12,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Repositories", "Repositories\Repositories.csproj", "{8C71543B-66F4-436F-960E-9994129B7E9C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Entities", "Entities\Entities.csproj", "{7AD0917F-AA6B-46C4-9B5C-88C863C561A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Contracts", "Contracts\Contracts.csproj", "{A5F60F54-A143-4F5C-ADAD-E86662E8531A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,10 @@ Global
 		{7AD0917F-AA6B-46C4-9B5C-88C863C561A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AD0917F-AA6B-46C4-9B5C-88C863C561A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7AD0917F-AA6B-46C4-9B5C-88C863C561A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5F60F54-A143-4F5C-ADAD-E86662E8531A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5F60F54-A143-4F5C-ADAD-E86662E8531A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5F60F54-A143-4F5C-ADAD-E86662E8531A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5F60F54-A143-4F5C-ADAD-E86662E8531A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
