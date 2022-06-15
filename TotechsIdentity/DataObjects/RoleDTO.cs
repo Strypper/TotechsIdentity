@@ -6,8 +6,6 @@ namespace TotechsIdentity.DataObjects
     public class RoleDTO
     {
         [Required]
-        public string Id         { get; set; }
-        [Required]
         public string  Name      { get; set; } = string.Empty;
         public string? RoleIcon  { get; set; }
         public string  Summary   { get; set; }
