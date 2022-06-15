@@ -39,5 +39,5 @@ jobs:
         with: 
           app-name: ${{ env.AZURE_WEBAPP_NAME }} # Replace with your app name
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_A43C424C94C049BB8F8292FE81585889 }}
-          package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp/TotechsIdentity.dll'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_164C56A9432E425F951575251750D6DB }}
+          package: .
