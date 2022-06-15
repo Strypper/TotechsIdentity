@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TotechsIdentity.DataObjects
 {
-    public class RoleDTO
+    public class RoleDTO : BaseDTO
     {
         [Required]
         public string  Name      { get; set; } = string.Empty;
