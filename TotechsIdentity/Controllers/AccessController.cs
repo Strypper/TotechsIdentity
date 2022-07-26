@@ -99,8 +99,6 @@ namespace TotechsIdentity.Controllers
                 }
             }
 
-            //await _userManager.AddClaimAsync(user, new Claim("", ""));
-
             await transaction.CommitAsync(cancellationToken);
 
             await SendEmailConfirmation(user);
@@ -125,6 +123,41 @@ namespace TotechsIdentity.Controllers
             if (!passwordCheck.Succeeded)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
+            var token         = await _tokenService.GenerateToken(user);
+            var refresh_token = Guid.NewGuid().ToString().Replace("-", "");
+
+            var requestAt = DateTime.UtcNow;
+            var expiresIn = Math.Floor((requestAt.AddDays(1) - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds);
+            //var roles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                user.Id,
+                requestAt,
+                expiresIn,
+                accessToken = token,
+                refresh_token,
+                userInfo = userDTO
+            });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> LoginWithPhoneNumber([FromBody] PhoneNumberLogin model)
+        {
+            var user = await _userManager.FindByPhoneNumberAsync(model.PhoneNumber);
+            if (user is null)
+                return BadRequest(new { message = "Username or password is incorrect" });
+
+            
+            var userRoles = await _userManager.GetRolesAsync(user);
+            var userDTO = _mapper.Map<UserDTO>(user);
+            userDTO.Roles = userRoles.ToArray();
+
+            var passwordCheck = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+            if (!passwordCheck.Succeeded)
+                return BadRequest(new { message = "Username or password is incorrect" });
+            
             var token         = await _tokenService.GenerateToken(user);
             var refresh_token = Guid.NewGuid().ToString().Replace("-", "");
 
