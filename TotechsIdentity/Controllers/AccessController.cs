@@ -19,6 +19,8 @@ using Refit;
 using Contracts.Intranet;
 using TotechsIdentity.DataObjects.IntranetDataObjects;
 using Contracts.TotechsIdentity;
+using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace TotechsIdentity.Controllers
 {
@@ -27,6 +29,7 @@ namespace TotechsIdentity.Controllers
     public class AccessController : BaseController
     {
         private readonly IMapper                         _mapper;
+        private readonly IMediaService                   _mediaService;
         private readonly UserManager                     _userManager;
         private readonly IEmailService                   _emailService;
         private readonly ITokenService                   _tokenService;
@@ -36,7 +39,8 @@ namespace TotechsIdentity.Controllers
         private readonly IProjectRepository              _projectRepository;
         private readonly IProjectPermissionRepository    _projectPermissionRepository;
         private readonly ILogger<AccessController>       _logger;
-        public AccessController(IMapper mapper, 
+        public AccessController(IMapper mapper,
+                                IMediaService mediaService,
                                 UserManager userManager,
                                 IEmailService emailService,
                                 ITokenService tokenService,
@@ -48,6 +52,7 @@ namespace TotechsIdentity.Controllers
                                 IProjectPermissionRepository projectPermissionRepository)
         {
             _logger                      = logger;
+            _mediaService                 = mediaService;
             _mapper                      = mapper;
             _userManager                 = userManager;
             _roleManager                 = roleManager;
@@ -141,6 +146,33 @@ namespace TotechsIdentity.Controllers
                 refresh_token,
                 userInfo = userDTO
             });
+        }
+
+
+        [HttpPost("{guid}")]
+        public async Task<IActionResult> UploadAvatar(string guid, IFormFile avatar)
+        {
+            if (_mediaService.IsImage(avatar))
+            {
+                var user = await _userManager.FindByGuidAsync(guid);
+                if (user is null) return NotFound("No User Found");
+
+                using (Stream stream = avatar.OpenReadStream())
+                {
+                    Tuple<bool, string> result = await _mediaService.UploadAvatarToStorage(stream, avatar.FileName);
+                    var isUploaded = result.Item1;
+                    var stringUrl = result.Item2;
+                    if (isUploaded && !string.IsNullOrEmpty(stringUrl))
+                    {
+                        user.ProfilePicUrl = stringUrl;
+                        await _userManager.UpdateAsync(user);
+
+                        return Ok(stringUrl);
+                    }
+                    else return BadRequest("Look like the image couldnt upload to the storage");
+                }
+            }
+            else return new UnsupportedMediaTypeResult();
         }
 
 

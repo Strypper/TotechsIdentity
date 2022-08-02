@@ -1,4 +1,5 @@
 using AutoMapper;
+using Azure.Storage;
 using Contracts.Intranet;
 using Contracts.TotechsIdentity;
 using Entities;
@@ -45,6 +46,8 @@ namespace TotechsIdentity
         {
             services.Configure<JwtTokenConfig>(Configuration.GetSection("JwtTokenConfig"));
             services.Configure<EmailConfig>(Configuration.GetSection("EmailConfig"));
+            services.Configure<AzureStorageConfig>(Configuration.GetSection("AzureStorageConfig"));
+
             services.AddHttpClient();
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
@@ -102,6 +105,13 @@ namespace TotechsIdentity
 
             services.AddScoped<IEmailService, SMTPEmailService>();
             services.AddScoped<ITokenService, JWTTokenService>();
+            services.AddScoped<IMediaService, AzureBlobStorageMediaService>();
+            services.AddSingleton((provider) =>
+            {
+                var config = provider.GetRequiredService<IOptionsMonitor<AzureStorageConfig>>().CurrentValue;
+                return new StorageSharedKeyCredential(config.AccountName, config.AccountKey);
+            });
+
             //Create SMTP Client
             services.AddScoped(provider =>
             {
