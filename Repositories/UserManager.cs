@@ -28,7 +28,7 @@ namespace Repositories
         {
         }
 
-        public async Task<User> FindByGuidAsync(string guid)
+        public async Task<User?> FindByGuidAsync(string guid)
             => await Users.FirstOrDefaultAsync(u => u.Guid == guid);
 
         public new async Task<User?> FindByNameAsync(string userName)
@@ -38,6 +38,9 @@ namespace Repositories
                 return null;
             return user;
         }
+
+        public async Task<User?> FindByPhoneNumberAsync(string phoneNumber)
+            => await Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
 
         public IQueryable<User> FindAll(int smartZoneId, Expression<Func<User, bool>>? predicate = null)
             => Users
