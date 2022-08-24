@@ -74,7 +74,7 @@ namespace TotechsIdentity.Controllers
             user.DateJoin = DateTime.UtcNow;
 
             var project = await _projectRepository.GetByIdAsync<ProjectDTO>("api/Project/Get", dto.RequestServiceId);
-            if(project == null)
+            if (project == null)
                 return NotFound("Request Application is not exist");
 
             var createResult = await _userManager.CreateAsync(user, dto.Password);
