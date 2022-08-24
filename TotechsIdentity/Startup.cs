@@ -161,7 +161,7 @@ namespace TotechsIdentity
             //services.AddTransient<IProjectRepository, ProjectRepository>();
 
             //Totechs
-            services.AddTransient<IProjectPermissionRepository, ProjectPermissionRepository>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

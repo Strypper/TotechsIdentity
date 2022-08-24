@@ -9,7 +9,6 @@ namespace Entities
         public IdentityContext(DbContextOptions options) : base(options) { }
         public DbSet<RoleLevel>         RoleLevels         { get; set; }
         public DbSet<Country>           Countries          { get; set; }
-        public DbSet<ProjectPermission> ProjectPermissions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -25,18 +24,6 @@ namespace Entities
             {
                 entity.HasOne(ur => ur.Role).WithMany(r => r!.UserRoles).HasForeignKey(ur => ur.RoleId).IsRequired().OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(ur => ur.User).WithMany(u => u!.UserRoles).HasForeignKey(ur => ur.UserId).IsRequired().OnDelete(DeleteBehavior.Cascade);
-            });
-
-            builder.Entity<ProjectPermission>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).ValueGeneratedOnAdd().UseIdentityColumn();
-            });
-
-            builder.Entity<ProjectPermission>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).ValueGeneratedOnAdd().UseIdentityColumn();
             });
         }
     }

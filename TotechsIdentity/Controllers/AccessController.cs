@@ -192,10 +192,11 @@ namespace TotechsIdentity.Controllers
 
                 using (Stream stream = avatar.OpenReadStream())
                 {
-                    Tuple<bool, string> result = await _mediaService.UploadAvatarToStorage(stream, avatar.FileName);
-                    var isUploaded = result.Item1;
+                    Tuple<string, string> result = await _mediaService.UploadAvatarToStorage(stream, avatar.FileName);
+                    var blobName = result.Item1;
                     var stringUrl = result.Item2;
-                    if (isUploaded && !string.IsNullOrEmpty(stringUrl))
+
+                    if (!String.IsNullOrEmpty(blobName) && !string.IsNullOrEmpty(stringUrl))
                     {
                         user.ProfilePicUrl = stringUrl;
                         await _userManager.UpdateAsync(user);
