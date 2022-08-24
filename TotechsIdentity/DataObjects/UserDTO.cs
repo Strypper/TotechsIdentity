@@ -48,7 +48,8 @@ namespace TotechsIdentity.DataObjects
         [Required]
         [Phone]
         public string PhoneNumber { get; set; } = string.Empty;
-        public int RequestServiceId { get; set; }
+
+        // public int RequestServiceId { get; set; }
         public ICollection<string> Roles { get; set; } = Array.Empty<string>();
     }
 }
