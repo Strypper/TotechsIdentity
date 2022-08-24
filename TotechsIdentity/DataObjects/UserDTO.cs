@@ -20,6 +20,7 @@ namespace TotechsIdentity.DataObjects
         public string LastName { get; set; } = string.Empty;
 
         public string? ProfilePicUrl { get; set; }
+        public string? ProfilePicName { get; set; }
 
         [Required]
         [EmailAddress]
@@ -49,6 +50,7 @@ namespace TotechsIdentity.DataObjects
         [Phone]
         public string PhoneNumber { get; set; } = string.Empty;
         public string? ProfilePicUrl { get; set; }
+        public string? ProfilePicName { get; set; }
         public int RequestServiceId { get; set; }
         public ICollection<string> Roles { get; set; } = Array.Empty<string>();
     }

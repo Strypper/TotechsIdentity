@@ -16,11 +16,16 @@ namespace TotechsIdentity.Services
     {
         private readonly IOptionsMonitor<AzureStorageConfig> _storageConfig;
         private StorageSharedKeyCredential _storageCredentials;
+        private BlobContainerClient _avatarBlobContainerClient;
+
+
         public AzureBlobStorageMediaService(IOptionsMonitor<AzureStorageConfig> azureStorageConfig,
-                                             StorageSharedKeyCredential storageCredentials)
+                                             StorageSharedKeyCredential storageCredentials,
+                                             BlobContainerClient avatarBlobContainerClient)
         {
             _storageConfig = azureStorageConfig;
             _storageCredentials = storageCredentials;
+            _avatarBlobContainerClient = avatarBlobContainerClient;
         }
 
         public Task<List<string>> GetThumbNailUrls()
@@ -40,24 +45,7 @@ namespace TotechsIdentity.Services
             return formats.Any(item => file.FileName.EndsWith(item, StringComparison.OrdinalIgnoreCase));
         }
 
-        public async Task<Tuple<bool, string>> UploadFileToStorage(Stream fileStream,
-                                                                   string fileName)
-        {
-            var blobUri = new Uri("https://" +
-                                  _storageConfig.CurrentValue.AccountName +
-                                  ".blob.core.windows.net/" +
-                                  _storageConfig.CurrentValue.ImageContainer +
-                                  "/" + fileName);
-            // Create the blob client.
-            var blobClient = new BlobClient(blobUri, _storageCredentials);
-
-            // Upload the file
-            await blobClient.UploadAsync(fileStream);
-
-            return new Tuple<bool, string>(await Task.FromResult(true), blobClient.Uri.AbsoluteUri);
-        }
-
-        public async Task<Tuple<bool, string>> UploadAvatarToStorage(Stream fileStream,
+        public async Task<Tuple<string, string>> UploadAvatarToStorage(Stream fileStream,
                                                                      string fileName)
         {
             var blobUri = new Uri("https://" +
@@ -71,7 +59,20 @@ namespace TotechsIdentity.Services
             // Upload the file
             await blobClient.UploadAsync(fileStream);
 
-            return new Tuple<bool, string>(await Task.FromResult(true), blobClient.Uri.AbsoluteUri);
+            return new Tuple<string, string>(blobClient.Name, blobClient.Uri.AbsoluteUri);
+        }
+
+        public async Task DeleteFileAsync(string fileName)
+        {
+            try
+            {
+                var blob = _avatarBlobContainerClient.GetBlobClient(fileName);
+                await blob.DeleteIfExistsAsync();
+            }
+            catch (Exception)
+            {
+                
+            }
         }
     }
 }
