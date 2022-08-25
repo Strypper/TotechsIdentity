@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -50,6 +50,7 @@ namespace TotechsIdentity.DataObjects
         public string PhoneNumber { get; set; } = string.Empty;
 
         // public int RequestServiceId { get; set; }
+        public string? ProfilePicUrl { get; set; }
         public ICollection<string> Roles { get; set; } = Array.Empty<string>();
     }
 }

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using TotechsIdentity.DataObjects;
 using Entities;
 using Microsoft.AspNetCore.Identity;
