@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using TotechsIdentity.DataObjects;
 using Entities;
 using Microsoft.AspNetCore.Identity;
@@ -28,6 +28,9 @@ namespace TotechsIdentity.Controllers
     [ApiController]
     public class AccessController : BaseController
     {
+        //private readonly IProjectRepository _projectRepository;
+        //private readonly IProjectPermissionRepository _projectPermissionRepository;
+
         private readonly IMapper                         _mapper;
         private readonly IMediaService                   _mediaService;
         private readonly UserManager                     _userManager;
@@ -36,8 +39,6 @@ namespace TotechsIdentity.Controllers
         private readonly IdentityContext                 _identityContext;
         private readonly RoleManager<Role>               _roleManager;
         private readonly SignInManager<User>             _signInManager;
-        private readonly IProjectRepository              _projectRepository;
-        private readonly IProjectPermissionRepository    _projectPermissionRepository;
         private readonly ILogger<AccessController>       _logger;
         public AccessController(IMapper mapper,
                                 IMediaService mediaService,
@@ -47,12 +48,10 @@ namespace TotechsIdentity.Controllers
                                 RoleManager<Role> roleManager,
                                 IdentityContext identityContext,
                                 ILogger<AccessController> logger,
-                                SignInManager<User> signInManager,
-                                IProjectRepository projectRepository,
-                                IProjectPermissionRepository projectPermissionRepository)
+                                SignInManager<User> signInManager)
         {
             _logger                      = logger;
-            _mediaService                 = mediaService;
+            _mediaService                = mediaService;
             _mapper                      = mapper;
             _userManager                 = userManager;
             _roleManager                 = roleManager;
@@ -60,8 +59,9 @@ namespace TotechsIdentity.Controllers
             _emailService                = emailService;
             _signInManager               = signInManager;
             _identityContext             = identityContext;
-            _projectRepository           = projectRepository;
-            _projectPermissionRepository = projectPermissionRepository; 
+
+            //_projectRepository           = projectRepository;
+            //_projectPermissionRepository = projectPermissionRepository; 
         }
 
         [AllowAnonymous]
@@ -73,9 +73,9 @@ namespace TotechsIdentity.Controllers
             var user = _mapper.Map<User>(dto);
             user.DateJoin = DateTime.UtcNow;
 
-            var project = await _projectRepository.GetByIdAsync<ProjectDTO>("api/Project/Get", dto.RequestServiceId);
-            if (project == null)
-                return NotFound("Request Application is not exist");
+            //var project = await _projectRepository.GetByIdAsync<ProjectDTO>("api/Project/Get", dto.RequestServiceId);
+            //if(project == null)
+            //    return NotFound("Request Application is not exist");
 
             var createResult = await _userManager.CreateAsync(user, dto.Password);
             if (!createResult.Succeeded)
@@ -86,7 +86,7 @@ namespace TotechsIdentity.Controllers
             };
 
             //Register permission to use request service
-            _projectPermissionRepository.Create(new ProjectPermission() { RequestUser = user , ProjectId = project.Id , IsApproved = true});
+            //_projectPermissionRepository.Create(new ProjectPermission() { RequestUser = user , ProjectId = project.Id , IsApproved = true});
 
             foreach (var roleId in dto.Roles)
             {
@@ -192,10 +192,11 @@ namespace TotechsIdentity.Controllers
 
                 using (Stream stream = avatar.OpenReadStream())
                 {
-                    Tuple<bool, string> result = await _mediaService.UploadAvatarToStorage(stream, avatar.FileName);
-                    var isUploaded = result.Item1;
+                    Tuple<string, string> result = await _mediaService.UploadAvatarToStorage(stream, avatar.FileName);
+                    var blobName = result.Item1;
                     var stringUrl = result.Item2;
-                    if (isUploaded && !string.IsNullOrEmpty(stringUrl))
+
+                    if (!String.IsNullOrEmpty(blobName) && !string.IsNullOrEmpty(stringUrl))
                     {
                         user.ProfilePicUrl = stringUrl;
                         await _userManager.UpdateAsync(user);

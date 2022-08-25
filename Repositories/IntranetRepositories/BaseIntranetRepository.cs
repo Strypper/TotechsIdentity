@@ -21,14 +21,14 @@ namespace Repositories.IntranetRepositories
             
         }
 
-        public async Task<T> GetAsync<T>(string url)
+        public async Task<T?> GetAsync<T>(string url)
         {
             var response = await _httpClient.GetAsync(url);
             var result = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(result);
         }
 
-        public async Task<T> GetByIdAsync<T>(string url, int id)
+        public async Task<T?> GetByIdAsync<T>(string url, int id)
         {
             string finalGetByIdUrl(int entityId) => $"{url}/{entityId}";
             var response = await _httpClient.GetAsync(finalGetByIdUrl(id));
@@ -36,7 +36,7 @@ namespace Repositories.IntranetRepositories
             return JsonConvert.DeserializeObject<T>(result);
         }
 
-        public async Task<T> CreateAsync<T>(string url, object o)
+        public async Task<T?> CreateAsync<T>(string url, object o)
         {
             var content = new StringContent(JsonConvert.SerializeObject(o), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync(url, content);

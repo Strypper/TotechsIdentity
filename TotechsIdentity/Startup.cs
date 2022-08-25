@@ -158,10 +158,10 @@ namespace TotechsIdentity
             }).CreateMapper());
 
             //Intranet
-            services.AddTransient<IProjectRepository, ProjectRepository>();
+            //services.AddTransient<IProjectRepository, ProjectRepository>();
 
             //Totechs
-            services.AddTransient<IProjectPermissionRepository, ProjectPermissionRepository>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -170,7 +170,8 @@ namespace TotechsIdentity
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                
+                app.UseCors(opt => opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
             }
 
             app.UseSwagger();
