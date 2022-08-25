@@ -21,3 +21,8 @@ namespace Entities
         public virtual   ICollection<UserRole> UserRoles { get; set; }           = new HashSet<UserRole>();
     }
 }
+
+public enum MediaType
+{
+    Video, Photo, Avatar
+}

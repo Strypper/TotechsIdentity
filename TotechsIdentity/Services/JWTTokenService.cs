@@ -22,6 +22,7 @@ namespace TotechsIdentity.Services
         private readonly UserManager     _userManager;
         private readonly JwtTokenConfig  _tokenConfig;
         private readonly IdentityContext _identityContext;
+
         public JWTTokenService(UserManager                     userManager
                               ,IOptionsMonitor<JwtTokenConfig> tokenConfigOptionsAccessor
                               ,IdentityContext                 identityContext)
@@ -37,17 +38,11 @@ namespace TotechsIdentity.Services
             var roles = await _userManager.GetRolesAsync(user);
             var claims = await _userManager.GetClaimsAsync(user);
 
-            var projectPermissions = await _identityContext
-                                                .ProjectPermissions
-                                                .Where(projectPermission => projectPermission.RequestUser.Id == user.Id)
-                                                .ToArrayAsync();
-
             var identity = new ClaimsIdentity(
                 new GenericIdentity(user.UserName, JwtTokenConstants.GenericIdentityType),
                 new[] { new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())}
                     .Union(roles.Select(role => new Claim(ClaimTypes.Role, role)))
                     .Union(claims)
-                    .Union(projectPermissions.ClaimsExtensions())
                 );
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenConfig.Key));

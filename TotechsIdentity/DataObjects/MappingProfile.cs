@@ -22,9 +22,6 @@ namespace TotechsIdentity.DataObjects
 
             CreateMap<Country, CountryDTO>();
             CreateMap<CountryDTO, Country>();
-
-            CreateMap<ProjectPermission, ProjectPermissionDTO>();
-            CreateMap<ProjectPermissionDTO, ProjectPermission>();
         }
     }
 }

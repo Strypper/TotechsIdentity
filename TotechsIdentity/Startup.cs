@@ -159,7 +159,7 @@ namespace TotechsIdentity
             }).CreateMapper());
 
             //Intranet
-            services.AddTransient<IProjectRepository, ProjectRepository>();
+            //services.AddTransient<IProjectRepository, ProjectRepository>();
 
             //Totechs
             services.AddTransient<IProjectPermissionRepository, ProjectPermissionRepository>();
@@ -177,7 +177,8 @@ namespace TotechsIdentity
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                
+                app.UseCors(opt => opt.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
             }
 
             app.UseSwagger();
