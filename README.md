@@ -19,15 +19,15 @@ The project only provide the skeleton how things handle in our REST API,
 The project include migrations folder to help generate the database please follow these steps below
 1. Rebuild project to check if is there's any problem (If there are problems when you doing this action, please pull the project again to make sure you are on the latest version and if that doesn't help we recommend contacting the Totechs members for investigation)
 2. Once the project build success navigate to TotechsIdentity.Entities and run this command
- #### Project Location
- ```TotechsIdentity
-    TotechsIdentity/ 
-        ── Entities
- ```
- #### Run command 
- ```
- script-migration
- ```
+       #### Project Location
+       ```TotechsIdentity
+          TotechsIdentity/ 
+              ── Entities
+       ```
+       #### Run command 
+       ```
+       script-migration
+       ```
 3. Apply the generated SQL Script to your database
 4. Change the connection string inside the appsettings.json to match with your database local connection string
 5. Run the project
