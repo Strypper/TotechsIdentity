@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using TotechsIdentity.AppSettings;
-using TotechsIdentity.Enums;
 using TotechsIdentity.Services.IService;
 
 namespace TotechsIdentity.Services
