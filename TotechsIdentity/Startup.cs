@@ -1,5 +1,6 @@
 using AutoMapper;
 using Azure.Storage;
+using Azure.Storage.Blobs;
 using Contracts.Intranet;
 using Contracts.TotechsIdentity;
 using Entities;
@@ -160,7 +161,13 @@ namespace TotechsIdentity
             //services.AddTransient<IProjectRepository, ProjectRepository>();
 
             //Totechs
+            services.AddTransient<IProjectPermissionRepository, ProjectPermissionRepository>();
 
+            services.AddTransient<BlobContainerClient>(provider =>
+            {
+                var config = provider.GetRequiredService<IOptionsMonitor<AzureStorageConfig>>().CurrentValue;
+                return new BlobContainerClient(config.BlobConnectionString, config.ImageContainer);
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

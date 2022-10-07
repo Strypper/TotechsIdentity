@@ -18,12 +18,15 @@ namespace TotechsIdentity.Services
     {
         private readonly IOptionsMonitor<AzureStorageConfig> _storageConfig;
         private StorageSharedKeyCredential _storageCredentials;
+        private BlobContainerClient _avatarBlobContainerClient;
 
         public AzureBlobStorageMediaService(IOptionsMonitor<AzureStorageConfig> azureStorageConfig,
-                                             StorageSharedKeyCredential storageCredentials)
+                                             StorageSharedKeyCredential storageCredentials,
+                                             BlobContainerClient avatarBlobContainerClient)
         {
             _storageConfig = azureStorageConfig;
             _storageCredentials = storageCredentials;
+            _avatarBlobContainerClient = avatarBlobContainerClient;
         }
 
         public Task<List<string>> GetThumbNailUrls()
@@ -42,9 +45,9 @@ namespace TotechsIdentity.Services
 
             return formats.Any(item => file.FileName.EndsWith(item, StringComparison.OrdinalIgnoreCase));
         }
-
-        public async Task<Tuple<string, string, string>> UploadFileToStorage(Stream fileStream,
-                                                                             string fileName)
+        
+        public async Task<Tuple<string, string>> UploadAvatarToStorage(Stream fileStream,
+                                                                     string fileName)
         {
             var blobGuid = Guid.NewGuid().ToString("N");
             var blobUri = new Uri("https://" +
@@ -57,25 +60,9 @@ namespace TotechsIdentity.Services
             var blobClient = new BlobClient(blobUri, _storageCredentials);
             // Upload the file
             await blobClient.UploadAsync(fileStream);
-
-            return new Tuple<string, string, string>(blobClient.Name, blobClient.Uri.AbsoluteUri, blobGuid);
-        }
-
-        public async Task<Tuple<string, string>> UploadAvatarToStorage(Stream fileStream,
-                                                                     string fileName)
-        {
-            var blobUri = new Uri("https://" +
-                                  _storageConfig.CurrentValue.AccountName +
-                                  ".blob.core.windows.net/" +
-                                  _storageConfig.CurrentValue.ImageContainer +
-                                  "/" + fileName);
-            // Create the blob client.
-            var blobClient = new BlobClient(blobUri, _storageCredentials);
-
-            // Upload the file
-            await blobClient.UploadAsync(fileStream);
-
+            
             return new Tuple<string, string>(blobClient.Name, blobClient.Uri.AbsoluteUri);
         }
+
     }
 }

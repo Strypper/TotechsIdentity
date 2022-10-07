@@ -190,20 +190,24 @@ namespace TotechsIdentity.Controllers
                 var user = await _userManager.FindByGuidAsync(guid);
                 if (user is null) return NotFound("No User Found");
 
+                if(user.ProfilePicName is not null) await _mediaService.DeleteFileAsync(user.ProfilePicName);
+
                 using (Stream stream = avatar.OpenReadStream())
                 {
-                    Tuple<string, string> result = await _mediaService.UploadAvatarToStorage(stream, avatar.FileName);
+                    var uniqueName = $"{user.Guid}_{avatar.FileName}";
+                    Tuple<string, string> result = await _mediaService.UploadAvatarToStorage(stream, uniqueName);
                     var blobName = result.Item1;
                     var stringUrl = result.Item2;
-
                     if (!String.IsNullOrEmpty(blobName) && !string.IsNullOrEmpty(stringUrl))
                     {
                         user.ProfilePicUrl = stringUrl;
+                        user.ProfilePicName = uniqueName;
+
                         await _userManager.UpdateAsync(user);
 
                         return Ok(stringUrl);
                     }
-                    else return BadRequest("Look like the image couldnt upload to the storage");
+                    else return BadRequest("Look like the image couldnt be uploaded to the storage");
                 }
             }
             else return new UnsupportedMediaTypeResult();
