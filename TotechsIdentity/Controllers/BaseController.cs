@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace TotechsIdentity.Controllers
+namespace TotechsIdentity;
+public class BaseController : ControllerBase
 {
-    public class BaseController : ControllerBase
-    {
-    }
 }
+

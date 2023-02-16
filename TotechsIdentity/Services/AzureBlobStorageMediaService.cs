@@ -1,7 +1,5 @@
-﻿using Azure;
-using Azure.Storage;
+﻿using Azure.Storage;
 using Azure.Storage.Blobs;
-using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System;
@@ -21,12 +19,17 @@ namespace TotechsIdentity.Services
         private BlobContainerClient _avatarBlobContainerClient;
 
         public AzureBlobStorageMediaService(IOptionsMonitor<AzureStorageConfig> azureStorageConfig,
-                                             StorageSharedKeyCredential storageCredentials,
-                                             BlobContainerClient avatarBlobContainerClient)
+                                            StorageSharedKeyCredential storageCredentials,
+                                            BlobContainerClient avatarBlobContainerClient)
         {
             _storageConfig = azureStorageConfig;
             _storageCredentials = storageCredentials;
             _avatarBlobContainerClient = avatarBlobContainerClient;
+        }
+
+        public Task DeleteFileAsync(string fileName)
+        {
+            throw new NotImplementedException();
         }
 
         public Task<List<string>> GetThumbNailUrls()
@@ -45,7 +48,7 @@ namespace TotechsIdentity.Services
 
             return formats.Any(item => file.FileName.EndsWith(item, StringComparison.OrdinalIgnoreCase));
         }
-        
+
         public async Task<Tuple<string, string>> UploadAvatarToStorage(Stream fileStream,
                                                                      string fileName)
         {
@@ -60,7 +63,7 @@ namespace TotechsIdentity.Services
             var blobClient = new BlobClient(blobUri, _storageCredentials);
             // Upload the file
             await blobClient.UploadAsync(fileStream);
-            
+
             return new Tuple<string, string>(blobClient.Name, blobClient.Uri.AbsoluteUri);
         }
 
